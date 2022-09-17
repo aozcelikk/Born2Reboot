@@ -1,0 +1,15 @@
+#!bin/bash
+
+echo -ne "\t#Architecture: "; uname -a
+echo -ne "\t#CPU physical : "; grep -c ^processor /proc/cpuinfo
+echo -ne "\t#vCPU : "; cat /proc/cpuinfo | grep processor | wc -l
+echo -ne "\t#Memory Usage: "; free -m | awk 'NR==2{printf "%s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }'
+echo -ne  "\t#Disk Usage: "; df -Bm | awk '$NF=="/"{printf "%d/", $3}'
+echo -ne ; df -h | awk '$NF=="/"{printf "%dGb (%s)\n", $2,$5}'
+echo -ne "\t#CPU load: "; top -bn1 | grep load | awk '{printf "%.1f%%\n", $(NF-2)}'
+echo -ne "\t#Last boot: "; (who -b | awk '{print $3 " "$4}')
+echo -ne "\t#LVM use: "; if cat /etc/fstab | grep -q "/dev/mapper/"; then echo "yes"; else echo "no"; fi
+echo -ne "\t#Connexions TCP : "; cat /proc/net/tcp | wc -l |awk '{print $1-1}'|tr '\n' ' ' && echo "ESTABLISHED"
+echo -ne "\t#User log : "; users | wc -w
+echo -ne "\t#Network: IP "; hostname -I|tr -d '\n' &&echo -n "(" && ip link show | awk '$1 == "link/ether" {print $2}'| tr -d '\n' && echo -n ")" && printf "\n"
+echo -ne "\t#Sudo : "; cat /var/log/sudo/sudo.log | wc -l | tr '\n' ' ' && echo "cmd" && printf "\n"
